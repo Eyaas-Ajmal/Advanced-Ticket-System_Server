@@ -1,17 +1,35 @@
+import dotenv from 'dotenv'
+dotenv.config()
 import express from 'express';
-import dotenv from 'dotenv';
-import connectDB from './config/database.js';
+import cors from 'cors';
+import connectDB from './config/database.js'; // Import the database connection function
+import userRouter from './routes/userRoutes.js';
+import ticketrouter from './routes/ticketRoutes.js';
 
-dotenv.config();
 
 const app = express();
 
-app.use(express.json());
+// Middleware
+app.use(cors({
+  origin: ['http://localhost:5175', 'http://localhost:5174'], // frontend URL
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+})); // CORS
 
+app.use(express.json()); 
+
+//connect db
 await connectDB();
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server is running on ${PORT}`);
-});
+//call the user models: router -> controller -> models
+app.use('/api/user', userRouter)
+app.use('/api/tickets', ticketrouter)
 
+
+//start server
+const PORT = process.env.PORT || 5001;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}` );
+});
